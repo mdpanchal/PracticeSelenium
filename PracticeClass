@@ -1,0 +1,1742 @@
+package loginPage;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+import java.util.concurrent.TimeUnit;
+
+import org.openqa.selenium.Alert;
+import org.openqa.selenium.By;
+import org.openqa.selenium.Dimension;
+import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.Keys;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.interactions.Actions;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
+public class Reusables{
+	Properties properties = new Properties();
+	WebDriver driver = null;
+	int MEDIUM_WAIT = 10;
+	int SMALL_WAIT = 5;
+	int VERY_SMALL_WAIT = 3;
+	int LONG_WAIT = 15;
+	WebDriverWait waitSmall=null;
+
+			//##################################################################################
+		//Generate Random String
+		//##################################################################################
+		public String  generateRandonString() {
+			MessageDigest instance;
+			StringBuilder hexString = null;
+			try {
+				instance = MessageDigest.getInstance("MD5");
+
+				byte[] messageDigest = instance.digest(String.valueOf(System.nanoTime()).getBytes());
+				hexString = new StringBuilder();
+				for (int i = 0; i < messageDigest.length; i++) {
+					String hex = Integer.toHexString(0xFF & messageDigest[i]);
+					if (hex.length() == 1) {
+						// could use a for loop, but we're only dealing with a single
+						// byte
+						hexString.append('0');
+					}
+					hexString.append(hex);
+				}
+				System.out.println(hexString.toString());
+
+			} catch (NoSuchAlgorithmException e) {
+				 
+				e.printStackTrace();
+			}
+			return hexString.toString();
+		}
+
+		//##################################################################################
+		//Get WebElement
+		//##################################################################################
+		public WebElement getWebElement(By locator) {
+			return driver.findElement(locator);
+		}
+
+		public WebElement getWebElement(String strXpath) {
+			WebElement elt = null;
+
+			try {
+				elt = driver.findElement(By.xpath(strXpath));
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+			return elt;
+		}
+
+
+
+
+
+
+
+
+		//##################################################################################
+		// Scrolls to Bottom of the Page
+		//##################################################################################
+		public void scrollDown() {
+			JavascriptExecutor js = (JavascriptExecutor) driver;
+			js.executeScript("window.scrollTo(0, document.body.scrollHeight)");
+			checkPageIsReady(MEDIUM_WAIT);
+		}
+
+		//##################################################################################
+		// Scrolls to top of the Page
+		//##################################################################################
+		public void scrollUp() {
+			JavascriptExecutor jse = (JavascriptExecutor) driver;
+			jse.executeScript("window.scrollTo(0,0);");
+		}
+
+		//##################################################################################
+		// Scrolls to Right of the Page
+		//##################################################################################
+		public void scrollRight(int pixels) {
+			JavascriptExecutor js = (JavascriptExecutor) driver;
+			js.executeScript("window.scrollBy("+pixels+",0)");
+			checkPageIsReady(MEDIUM_WAIT);
+		}
+
+		//##################################################################################
+		// Scrolls by pixels
+		//##################################################################################
+		public void scrollByPixel(int pixels) {
+
+			JavascriptExecutor jse = (JavascriptExecutor) driver;
+			jse.executeScript("window.scrollBy(0," + pixels + ")", "");
+			checkPageIsReady(MEDIUM_WAIT);
+		}
+
+		//##################################################################################
+		//Scroll in to view
+		//##################################################################################
+		public void scrollInToView(WebElement ele) {
+			try {
+				JavascriptExecutor js = (JavascriptExecutor) driver;
+				js.executeScript("window.scrollTo(" + ele.getLocation().x + "," + (ele.getLocation().y - 100) + ");");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+
+		//##################################################################################
+		// Scroll until element visible
+		//##################################################################################
+		public void scrollUntilVisible(WebElement ele) {
+
+			try {
+				JavascriptExecutor jse = (JavascriptExecutor) driver;
+				jse.executeScript("window.scrollTo(0,0);");
+				jse.executeScript("arguments[0].scrollIntoView();", ele);
+				waitForObject(ele);
+				Actions actions = new Actions(driver);
+				actions.moveToElement(ele).build().perform();
+			} catch (Exception e) {
+				System.out.println("Element Not Displayed");
+			}
+
+		}
+
+		//##################################################################################
+		// Wait for the Object and the Click
+		//##################################################################################
+		public void clickButton(By Locator, String nameOfElement) {
+
+			if (waitForObject(Locator)) {
+				WebElement element = driver.findElement(Locator);
+				clickElement(element, nameOfElement);
+				System.out.println("Clicked the button " + nameOfElement);
+			} else {
+				System.out.println("Error clicking the button " + nameOfElement);
+			}
+		}
+
+		//##################################################################################
+		// Wait for the Object and the Click
+		//##################################################################################
+		public void clickButton(WebElement element, String nameOfElement) {
+
+			if (waitForObject(element)) {
+				clickElement(element, nameOfElement);
+				System.out.println("Clicked the button " + nameOfElement);
+			} else {
+				System.out.println("Error clicking the button " + nameOfElement);
+			}
+		}
+
+		//##################################################################################
+		// Wait for the Object and the Click without reporting
+		//##################################################################################
+		public void clickButtonWithoutReporting(WebElement element, String nameOfElement) {
+
+			if (waitForObject(element)) {
+				element.click();
+				System.out.println("Clicked the button " + nameOfElement);
+			} else {
+				System.out.println("Error clicking the button " + nameOfElement);
+			}
+		}
+
+		//##################################################################################
+		// Clicks the element
+		//##################################################################################
+		public void clickElement(WebElement element, String nameOfElement) {
+			try {
+				element.click();
+			} catch (Exception e) {
+				 
+				e.printStackTrace();
+			}
+		}
+
+		//##################################################################################
+		//Right Click on element
+		//##################################################################################
+		public void rightClickElement(WebElement element, String nameOfElement) {
+			try {
+				Actions action = new Actions(driver);
+				action.contextClick(element).build().perform();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+		//##################################################################################
+		// Click and Wait for the Page load
+		//##################################################################################
+		public void clickAndWaitForPageLoad(WebElement element, String nameOfElement, int loadTimeOut) {
+
+			// Perform click operation on a button, link etc
+			clickButton(element, nameOfElement);
+
+			// Wait for page to load
+			checkPageIsReady(loadTimeOut);
+
+		}
+
+		//##################################################################################
+		// Click and Wait for the Page load
+		//##################################################################################
+		public void clickAndWaitForPageLoad(By Locator, String nameOfElement, int timeOut) {
+
+			// Perform click operation on a button, link etc
+			clickButton(Locator, nameOfElement);
+
+			// Wait for page to load
+			checkPageIsReady(timeOut);
+
+		}
+
+		//##################################################################################
+		// Click using Java script
+		//##################################################################################
+		public void clickUsingJavascript(WebElement ele, String strStepName) {
+			try {
+				JavascriptExecutor executor = (JavascriptExecutor) driver;
+				waitForObject(ele);
+				checkPageIsReady(MEDIUM_WAIT);
+				executor.executeScript("arguments[0].click();", ele);
+			} catch (Exception e) {
+			}
+		}
+
+		//##################################################################################
+		// Enter Text
+		//##################################################################################
+		public void enterValue(WebElement element, String valueToEnter, String nameOfField) {
+
+			if (waitForObject(element)) {
+				element.clear();
+				element.sendKeys(valueToEnter);
+				element.sendKeys(Keys.TAB);
+			} else {
+			}
+		}
+
+		//##################################################################################
+		// Enter Text using Javascriptexecutor
+		//##################################################################################
+		public void enterValueUsingJavascript(WebElement element, String valueToEnter, String nameOfField) {
+			if (waitForObject(element)) {
+				JavascriptExecutor js = (JavascriptExecutor) driver;
+				js.executeScript("arguments[0].value = '';", element);
+				element.sendKeys(valueToEnter);
+				element.sendKeys(Keys.TAB);
+			} else {
+			}
+		}
+
+		//##################################################################################
+		//// Enter Text
+		//##################################################################################
+		public void enterValue(By Locator, String valueToEnter, String nameOfField) {
+
+			if (waitForObject(Locator)) {
+				WebElement element = driver.findElement(Locator);
+				element.clear();
+				element.sendKeys(valueToEnter);
+			} else {
+			}
+		}
+
+		//##################################################################################
+
+		//##################################################################################
+		public void enterPasswordText(By txtElement, String Value, String fieldName) {
+
+			try {
+				waitForObjectVisible(txtElement);
+				driver.findElement(txtElement).clear();
+				waitSeconds(VERY_SMALL_WAIT);
+				driver.findElement(txtElement).sendKeys(Value);
+			} catch (Exception e) {
+			}
+		}
+		//##################################################################################
+		//Enter Password Text
+		//##################################################################################
+		public void enterPasswordText(WebElement elt, String Value, String fieldName) {
+
+			try {
+				waitForObject(elt);
+				elt.clear();
+				waitSeconds(VERY_SMALL_WAIT);
+				elt.sendKeys(Value);
+			} catch (Exception e) {
+			}
+		}
+		//##################################################################################
+		//Enter Text No Report
+		//##################################################################################
+		public void enterTextNoReport(By txtElement, String Value, String fieldName) {
+
+			try {
+				waitForObjectVisible(txtElement);
+				driver.findElement(txtElement).clear();
+				waitSeconds(VERY_SMALL_WAIT);
+				driver.findElement(txtElement).sendKeys(Value);
+
+			} catch (Exception e) {
+			}
+		}
+		//##################################################################################
+		//Enter Text By text Element
+		//##################################################################################
+		public void enterText(By txtElement, String Value, String fieldName) {
+			if(Value.trim().isEmpty())
+				return;
+			try {
+				waitForObjectVisible(txtElement);
+				driver.findElement(txtElement).clear();
+				waitSeconds(VERY_SMALL_WAIT);
+				driver.findElement(txtElement).sendKeys(Value);
+
+			} catch (Exception e) {
+			}
+		}
+		//##################################################################################
+		//Enter Text WebElement
+		//##################################################################################
+		public void enterText(WebElement elt, String Value, String fieldName) {
+			if(Value.trim().isEmpty())
+				return;
+			try {
+				waitSeconds(VERY_SMALL_WAIT);
+				waitForObject(elt);
+				elt.clear();
+				waitSeconds(VERY_SMALL_WAIT);
+				elt.sendKeys(Value);
+			} catch (Exception e) {
+			}
+		}
+
+		//##################################################################################
+		// Select Text from Drop down
+		//##################################################################################
+		public void selectByTextFromDropDown(WebElement element, String valueToSelect, String nameOfField) {
+			if (waitForObject(element)) {
+				Select dropdown = new Select(element);
+				dropdown.selectByVisibleText(valueToSelect);
+				checkPageIsReady(SMALL_WAIT);
+			} else {
+			}
+		}
+
+		//##################################################################################
+		// Select Text from Drop down
+		//##################################################################################
+		public void selectByTextFromDropDown(By Locator, String valueToSelect, String nameOfField) {
+			if (waitForObject(Locator)) {
+				Select dropdown = new Select(driver.findElement(Locator));
+				dropdown.selectByVisibleText(valueToSelect);
+				checkPageIsReady(SMALL_WAIT);
+			} else {
+			}
+		}
+
+		//##################################################################################
+		//Wait For Object Visibility
+		//##################################################################################
+		public boolean waitForObjectVisible(By locator) {
+			try {
+				waitSmall = new WebDriverWait(driver, MEDIUM_WAIT);
+				waitSmall.until(ExpectedConditions.presenceOfElementLocated(locator));
+				waitSmall.until(ExpectedConditions.visibilityOfElementLocated(locator));
+				WebElement we = driver.findElement(locator);
+				waitSmall.until(ExpectedConditions.visibilityOf(we));
+				return true;
+			} catch (Exception ex) {
+				return false;
+			}
+		}
+		//##################################################################################
+		//Wait For Object Presence
+		//##################################################################################
+		public boolean waitForObjectPresent(By locator) {
+			try {
+				waitSmall = new WebDriverWait(driver, MEDIUM_WAIT);
+				waitSmall.until(ExpectedConditions.presenceOfElementLocated(locator));
+				return true;
+			} catch (Exception ex) {
+				return false;
+			}
+		} 
+		//##################################################################################
+		//Wait For Object Visiblity By Locator
+		//##################################################################################
+		public boolean waitForObjectVisible1(By locator) {
+			try {
+				waitSmall = new WebDriverWait(driver, MEDIUM_WAIT);
+				waitSmall.until(ExpectedConditions.presenceOfElementLocated(locator));
+				WebElement we = driver.findElement(locator);
+				waitSmall.until(ExpectedConditions.visibilityOf(we));
+				return true;
+			} catch (Exception ex) {
+				return false;
+			}
+		}
+		//##################################################################################
+		//Wait For Object Visibility
+		//##################################################################################
+		public boolean waitForObjectVisible2(By locator) {
+			try {
+				waitSmall = new WebDriverWait(driver, MEDIUM_WAIT);
+				waitSmall.until(ExpectedConditions.presenceOfElementLocated(locator));
+				WebElement we = driver.findElement(locator);
+				waitSmall.until(ExpectedConditions.visibilityOf(we));
+				return true;
+			} catch (Exception ex) {
+				return false;
+			}
+		}
+
+		//##################################################################################
+		//Wait For Object Visibility
+		//##################################################################################
+		public boolean waitForObjectInVisible(By locator) {
+			try {
+				waitSmall = new WebDriverWait(driver, MEDIUM_WAIT);
+				waitSmall.until(ExpectedConditions.presenceOfElementLocated(locator));
+				waitSmall.until(ExpectedConditions.invisibilityOfElementLocated(locator));
+				return true;
+			} catch (Exception ex) {
+				return false;
+			}
+		}
+
+		//##################################################################################
+		//Wait For Object Staleness
+		//##################################################################################
+		public boolean waitForObjectStaleness(By locator) {
+			try {
+				waitSmall = new WebDriverWait(driver, MEDIUM_WAIT);
+				waitSmall.until(ExpectedConditions.stalenessOf(driver.findElement(locator)));
+				return true;
+			} catch (Exception ex) {
+				return false;
+			}
+		}
+
+		//##################################################################################
+		// Waiting for page and objects to Load
+		//##################################################################################
+		public boolean waitForObject(WebElement elt) {
+			boolean returnValue = true;
+			waitSmall = new WebDriverWait(driver, MEDIUM_WAIT);
+			checkPageIsReady(MEDIUM_WAIT);
+
+			try {
+				waitSmall.until(ExpectedConditions.visibilityOf(elt));
+			} catch (Exception e) {
+				returnValue = false;
+				e.printStackTrace();
+			}
+
+			try {
+				waitSmall.until(ExpectedConditions.elementToBeClickable(elt));
+			} catch (Exception e) {
+				System.out.println("Inside Element clickable catch");
+				returnValue = false;
+				e.printStackTrace();
+			}
+
+			return returnValue;
+		}
+
+		//##################################################################################
+		//Wait For Object By Locator
+		//##################################################################################
+		public boolean waitForObject(By locator) {
+			boolean returnValue = true;
+			waitSmall = new WebDriverWait(driver, MEDIUM_WAIT);
+			checkPageIsReady(MEDIUM_WAIT);
+
+			try {
+				waitSmall.until(ExpectedConditions.presenceOfElementLocated(locator));
+			} catch (Exception e) {
+				returnValue = false;
+				e.printStackTrace();
+			}
+			try {
+				waitSmall.until(ExpectedConditions.elementToBeClickable(locator));
+			} catch (Exception e) {
+				System.out.println("Inside Element clickable catch");
+				returnValue = false;
+				e.printStackTrace();
+			}
+
+			return returnValue;
+		}
+
+
+		//##################################################################################
+		//Check Page is Ready
+		//##################################################################################
+		public void checkPageIsReady(int timeOutInSec) {
+
+			JavascriptExecutor js = (JavascriptExecutor) driver;
+
+			// Initially bellow given if condition will check ready state of page.
+			if (js.executeScript("return jQuery.active").toString().equals("0")
+					&& js.executeScript("return document.readyState").toString().equals("complete")) {
+				System.out.println("Page Is loaded.");
+				return;
+			}
+
+
+			//##################################################################################
+			// This loop will rotate for 25 times to check If page Is ready after every 1
+			// second.
+			// You can replace your value with 25 If you wants to Increase or decrease wait
+			// time.
+			//##################################################################################
+			for (int i = 0; i < timeOutInSec; i++) {
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+				}
+				// To check page ready state.
+				if (js.executeScript("return document.readyState").toString().equals("complete")
+						&& js.executeScript("return jQuery.active").toString().equals("0")) {
+					System.out.println("Page Is loaded in iteration# " + i);
+					break;
+				}
+			}
+
+			waitForPageLoad(timeOutInSec);
+		}
+
+
+		//##################################################################################
+		// ###########Waiting for page and objects to
+		// Load###################################
+		// Wair for particular number of seconds
+		//##################################################################################
+		public boolean waitSeconds(int seconds) {
+			try {
+				Thread.sleep(seconds * 1000);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return true;
+		}
+
+	
+		//##################################################################################
+		// ########Validate Error Message######
+		//##################################################################################
+		public void validateErrorMessage(WebElement ele, String expected, String stepName, WebElement eltErrorClose) {
+			//waitSeconds(1);
+			//WaitForObject(ele);
+			if (waitForObject(ele)) {
+				String actual = ele.getText();
+				System.out.println(actual);
+				if (actual.contains(expected)) {
+					clickButton(eltErrorClose, "Error Close");
+					waitSeconds(2);
+				} else {
+					clickButton(eltErrorClose, "Error Close");
+				}
+			} else {
+			}
+		}
+
+		//##################################################################################
+		// Validate Error Displayed on Page
+		//##################################################################################
+		public void validateError(WebElement ele, String strExpected) {
+			if (ele.isDisplayed()) {
+				String strActual = ele.getText();
+				if (strActual.contains(strExpected)) {
+				} else {
+				}
+			}
+		}
+
+		//##################################################################################
+		// Validate Info Message
+		//##################################################################################
+		public void validateInfoMessage(WebElement ele, String strExpected, String stepName, WebElement eltInfoClose) {
+			waitForObject(ele);
+			String strActual = ele.getText();
+			if (strActual.contains(strExpected)) {
+				clickElement(eltInfoClose, "Info Close");
+				waitSeconds(2);
+			} else {
+				clickElement(eltInfoClose, "Info Close");
+			}
+		}
+
+		//##########################################################
+		//Get Date
+		//##########################################################
+		String getDate(String format, int day) {
+			Calendar cal = Calendar.getInstance();
+			cal.add(Calendar.DATE, day);
+			Date date = cal.getTime();
+			DateFormat dateFormat = new SimpleDateFormat(format);
+			return dateFormat.format(date);
+		}
+
+		//##########################################################
+		//Convert Date Format
+		//##########################################################
+		String convertDateFormat(Date dateValue, String format) {
+			DateFormat dateFormat = new SimpleDateFormat(format);
+			return dateFormat.format(dateValue).toString();
+		}
+
+		//##########################################################
+		//Convert String to Date
+		//##########################################################
+		public Date convertStringToDate(String strDate, String fromFormat) {
+			Date dtValue = null;
+			try {
+				dtValue = new SimpleDateFormat(fromFormat).parse(strDate);
+			} catch (ParseException e) {
+				 
+				e.printStackTrace();
+			}
+			return dtValue;
+		}
+
+		// ##############Get Month Value from Given Date######################
+		public int getMonthFromDate(Date dtValue) {
+			int intMonthVal = 0;
+			try {
+				intMonthVal = dtValue.getMonth();
+			} catch (Exception e) {
+				 
+				e.printStackTrace();
+			}
+			return intMonthVal;
+		}
+
+		//##########################################################
+		// Returns Yesterday's Date
+		//##########################################################
+		public String getYesterdayDate(String format) {
+			return getDate(format, -1);
+		}
+
+		//##########################################################
+		// Returns Today's Date
+		//##########################################################
+		public String getTodayDate(String format) {
+			return getDate(format, 0);
+		}
+
+		//##########################################################
+		// Returns Tomorrow's Date
+		//##########################################################
+		public String getTomorrowDate(String format) {
+			return getDate(format, 1);
+		}
+
+		//##########################################################
+		// Returns Tomorrow's Date+10
+		//##########################################################
+		public String getTenthDate(String format) {
+			return getDate(format, 10);
+		}
+
+		//##########################################################
+		//Get Next Coming Day
+		//##########################################################
+		public Date nextComingDay(int dow) {
+			Calendar cal = Calendar.getInstance();
+			int diff = dow - cal.get(Calendar.DAY_OF_WEEK);
+			if (diff <= 0) {
+				diff += 7;
+			}
+			cal.add(Calendar.DATE, diff);
+			Date date = cal.getTime();
+			return date;
+		}
+
+		//##########################################################
+		//Get the Date in String Format
+		//##########################################################
+		public String getStringDate(Date date, String format) {
+			String dateString = null;
+			SimpleDateFormat sdfr = new SimpleDateFormat("dd/MM/yyyy");
+			dateString = sdfr.format(date);
+			return dateString;
+		}
+
+		//##########################################################
+		//Get date of Day After n days
+		//##########################################################
+		public String getDateAfter(int days, String format) {
+			return getDate(format, days);
+		}
+
+		//##########################################################
+		//Get Days of the Month 
+		//##########################################################
+		public int getDaysInMonth(Date dateValue) {
+			int intDays = 0;
+			try {
+				Calendar calendar = Calendar.getInstance();
+				calendar.setTime(dateValue);
+				intDays =calendar.getActualMaximum(Calendar.DAY_OF_MONTH);
+				//System.out.println("Last Date of the current month = " + intDate);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			return intDays;
+		}
+
+		//##########################################################
+		//Get Last Date of the Month in format (MM/dd/yyyy)
+		//##########################################################
+		public String getLastDateOfMonth(Date dateValue) {
+			String strFinalDate = "";
+			String strDate = "";
+			String strMonth = "";
+			try {
+				Calendar calendar = Calendar.getInstance();
+				calendar.setTime(dateValue);
+				strDate =appendZero(calendar.getActualMaximum(Calendar.DAY_OF_MONTH));
+				//System.out.println("Last Date of the current month = " + intDate);
+				strMonth = appendZero(calendar.get(Calendar.MONTH)+1);
+				int intYear = calendar.get(Calendar.YEAR);
+				strFinalDate = strMonth+"/"+strDate+"/"+intYear;
+			} catch (Exception e) {
+				 
+				e.printStackTrace();
+			}
+			return strFinalDate;
+		}
+
+		//##########################################################
+		//Get First Date of the Month in format (MM/dd/yyyy)
+		//##########################################################
+		public String getFirstDateOfMonth(Date dateValue) {
+			String strFinalDate = "";
+			String strDate = "";
+			String strMonth = "";
+			try {
+				Calendar calendar = Calendar.getInstance();
+				calendar.setTime(dateValue);
+				strDate = appendZero(calendar.getActualMinimum(Calendar.DAY_OF_MONTH));
+				//System.out.println("First Date of the current month = " + strDate);
+				strMonth = appendZero(calendar.get(Calendar.MONTH)+1);
+				int intYear = calendar.get(Calendar.YEAR);
+				strFinalDate = strMonth+"/"+strDate+"/"+intYear;
+			} catch (Exception e) {
+				 
+				e.printStackTrace();
+			}
+			return strFinalDate;
+		}
+
+
+		//################################################################################## 
+		//Calculate Time Difference
+		//##################################################################################
+		public String calculateTimeDifference(String strActualStartTime, String strActualEndTime) {
+			//String strActualStartTime = "05:30 AM";
+			//String strActualEndTime = "07:00 AM";
+			String strTimeDiff = "";
+			try {
+				//Convert String in to Time Value
+				long lngActualStartTime = (convertStringToDate(strActualStartTime, "hh:mm a")).getTime();
+				long lngActualEndTime = (convertStringToDate(strActualEndTime, "hh:mm a")).getTime();
+				//Calculate Difference
+				long lngTimeDiff = Math.abs(lngActualEndTime-lngActualStartTime);
+				//Split in Hours and Minutes
+				long lngMinutes = TimeUnit.MINUTES.convert(lngTimeDiff, TimeUnit.MILLISECONDS);
+				String strMinutes = lngMinutes+"";
+				//Capture the Difference in required format (here hh:mm)
+				strTimeDiff = convertDateFormat(convertStringToDate(strMinutes, "mm"), "HH:mm");
+			} catch (Exception e) {
+
+				 
+				e.printStackTrace();
+			}
+			//Return String Value
+			return strTimeDiff;
+		}
+
+
+		//##########################################################
+		//Append Zero for Single Digit Integer Values
+		//##########################################################
+		public String appendZero(int intValue) {
+			String strValue = "";
+			if (intValue<=9) {
+				strValue = "0"+intValue;
+			} else {
+				strValue = ""+intValue;
+			}
+
+			return strValue;
+		}
+
+		//##########################################################
+		// Verifies disability of the Object
+		//##########################################################
+		public void checkForObjectDisability(WebElement ele, String strEleName) {
+			if (!ele.isEnabled()) {
+			} else {
+			}
+		}
+
+		//##########################################################
+		// Verify the object enable or not
+		//##########################################################
+		public void checkForObjectEnable(WebElement ele, String strEleName) {
+			if (ele.isEnabled()) {
+			} else {
+
+			}
+		}
+
+		//##########################################################
+		// Will returns the all the files of the Directory
+		//##########################################################
+		public List<String> getAllFilesFromDirectory(String strDirectory) {
+			File directory = new File(strDirectory);
+			File[] listOfFiles = directory.listFiles();
+			List<String> strFileNames = new ArrayList<String>();
+			for (int i = 0; i < listOfFiles.length; i++) {
+				if (listOfFiles[i].isFile()) {
+					String strFileName = listOfFiles[i].getName();
+					if (strFileName.contains(".xls") || strFileName.contains(".xlsx")) {
+						strFileNames.add(strFileName);
+					}
+				}
+			}
+			return strFileNames;
+		}
+
+		//##################################################################################
+		//Check Alert Presence
+		//##################################################################################
+		public boolean isAlertPresent() {
+			try {
+				waitSeconds(MEDIUM_WAIT);
+				driver.switchTo().alert();
+				return true;
+			} catch (Exception e) {
+				return false;
+			}
+		}
+
+		//##################################################################################
+		// Handle Alert Message
+		//##################################################################################
+		public void handleAlertIfPresent(String strExpectedAlertMessage, String strStepName) {
+			boolean isAlretExists = false;
+			waitSeconds(2);
+			isAlretExists = isAlertPresent();
+			while (isAlretExists) {
+				Alert alert = driver.switchTo().alert();
+				// Thread.sleep(1000);
+				String alertMsz = alert.getText();
+				// Thread.sleep(1000);
+				if (alertMsz.contains(strExpectedAlertMessage)) {
+					// Thread.sleep(2000);
+					alert.accept();
+				}
+				waitSeconds(2);
+				isAlretExists = isAlertPresent();
+			}
+		}
+
+		//##################################################################################
+		// Verify String Present in List
+		//##################################################################################
+		public void verifyStringPresentInList(List<String> strList, String strOption, String strStepName) {
+			if (strList.contains(strOption)) {
+			} else {
+			}
+		}
+
+		//##################################################################################
+		// Validate The Field
+		//##################################################################################
+		public void verifyField(String strExpected, String strActual, String strStepName) {
+			if (strActual.equalsIgnoreCase(strExpected.trim())) {
+			} else {
+			}
+		}
+
+		// Verify Element is Selected
+		public void verifyElementIsSelected(WebElement eltWebElement, String strStepName) {
+			if (eltWebElement.isSelected()) {
+			} else {
+				////report.updateTestLog(strStepName, strStepName + " is not Selected", Status.FAIL);
+			}
+		}
+
+		public void verifyElementIsNotSelected(WebElement eltWebElement, String strStepName) {
+			if (!eltWebElement.isSelected()) {
+				////report.updateTestLog(strStepName, strStepName + " is not Selected", Status.PASS);
+			} else {
+				////report.updateTestLog(strStepName, strStepName + " is Selected", Status.FAIL);
+			}
+		}
+
+		// Get The Day of the week
+		public String getDayOfWeek(String strDate, String strFormat) throws Exception {
+			SimpleDateFormat sdf = new SimpleDateFormat(strFormat);
+			Date dt1 = sdf.parse(strDate);
+			DateFormat format2 = new SimpleDateFormat("EEEE");
+			String strWeekDay = format2.format(dt1);
+			return strWeekDay;
+		}
+
+		public void explicitlyWait(WebElement ele) {
+
+			WebDriverWait wait = new WebDriverWait(driver, 100);
+		
+			wait.until(ExpectedConditions.elementToBeClickable(ele));
+		}
+
+		public void explicitlyWait(String strLocator) {
+
+			WebDriverWait wait = new WebDriverWait(driver, 100);
+
+			wait.until(ExpectedConditions.elementToBeClickable(By.xpath(strLocator)));
+		}
+
+		// Validate Info Message
+		public void validateInfoMessageDashBoardPage(WebElement ele, String strExpected, String stepName,
+				WebElement eltInfoClose) {
+			explicitlyWait(ele);
+			String strActual = ele.getText();
+			if (strActual.contains(strExpected)) {
+				try {
+					eltInfoClose.click();
+				} catch (Exception e) {
+
+				}
+				waitSeconds(2);
+			} else {
+				clickButton(eltInfoClose, "Info Close");
+				waitSeconds(5);
+			}
+		}
+
+		// Validate Info Message
+		public void validateInfoMessage(WebElement ele, String strExpected) {
+			waitForObject(ele);
+			String strActual = ele.getText();
+			if (strActual.contains(strExpected)) {
+				waitSeconds(2);
+			} else {
+			}
+		}
+
+
+		//Delete the Files which contains specific text
+		public void deleteExistingFilesIfAny(String strFileNameText) {
+			//Get The Home Directory
+			String strHomeDir=System.getProperty("user.home");	
+			//Get All the File Names in Downloads folder
+			List<String> strFileNames=getAllFilesFromDirectory(strHomeDir+"//Downloads");
+			//Variable for the File We are looking
+			File file=null;
+			for(String strFileName:strFileNames) {
+				if(strFileName.contains(strFileNameText)) {
+					file=new File(strHomeDir+"//Downloads//"+strFileName);
+					file.delete();
+				}
+			}
+		}
+		//verfiy select drop down options
+		public void verfiySelectOptions(WebElement element, String valueToSelect, String nameOfField) {
+			if (waitForObject(element)) {
+				Select dropdown = new Select(element);
+				List<WebElement> list=dropdown.getOptions();
+				for(int i=0;i<list.size();i++) {
+					list.get(i).getText().contains(valueToSelect);
+					//break;
+				}
+				checkPageIsReady(SMALL_WAIT);
+			} else {
+			}
+		}
+
+
+
+		//###############################################################
+
+		//Method Description           : Verifies Web Element is disabled or not
+
+		//##############################################################
+
+		public void verifyElementIsDisabled(WebElement elt,String strStepName) {
+			if(!elt.isEnabled()) {
+				////report.updateTestLog(strStepName,strStepName+" is disabled", Status.PASS);
+			}else {
+				////report.updateTestLog(strStepName,strStepName+" is not disabled", Status.FAIL);
+			}
+		}
+
+		//###############################################################
+		// clear
+
+		public void clear(WebElement ele) {
+			ele.clear();
+
+		}
+		//###############################################################
+
+		//Method Description           : Add Days To String Date
+
+		//Input Parameters             : 3(String Date , Format of Date and Number of Days)
+
+		//Return Value     			   : Date After adding days.
+
+
+		public String addDaysToStringDate(String strDate,String strFormat,int noOfDays) throws ParseException {
+			SimpleDateFormat sdf = new SimpleDateFormat(strFormat);
+			Calendar c = Calendar.getInstance();
+			c.setTime(sdf.parse(strDate));
+			c.add(Calendar.DATE, noOfDays);  // number of days to add
+			String strNewDate = sdf.format(c.getTime());  // dt is now the new date
+			return strNewDate;
+		}
+
+		//###############################################################
+
+		//Method Description           : Scrolls To Web Element 
+
+		//Input Parameters             : 3(Web Element)
+
+		//Return Value     			   : None
+
+
+		public void scrollToElement(WebElement ele) {
+			try {
+				Actions actions = new Actions(driver);
+				actions.moveToElement(ele);
+				actions.perform();
+			} catch (Exception e) {
+				System.out.println("Unable to Scroll to Element");
+			}
+		}
+		//###############################################################
+
+		//Method Description           : Select The by Index
+		//Input Parameters             : 3(Web Element , Index and Name Of Element)
+
+		// Select By Index from Drop down
+		public void SelectByIndexFromDropDown(WebElement element, int index, String nameOfField) {
+			if (waitForObject(element)) {
+				Select dropdown = new Select(element);
+				dropdown.selectByIndex(index);
+				checkPageIsReady(SMALL_WAIT);
+			} else {
+			}
+		}
+	
+
+		// ###############################################################
+		//Method Description           : Waits until Search Results loads completely
+		//Input Parameters             : 1(time in seconds )
+		//  Waits until Search Results loaded completely
+		public void waitForSearchResultsToLoad(int timeOut) {
+			for(int i=0;i<timeOut;i++) {
+				try {
+					WebElement	elt = driver.findElement(By.xpath("//div[@id='loading']"));
+					if(elt.isDisplayed()) {
+						System.out.println("Search Result Loading");
+						Thread.sleep(2000);
+					}else {
+						Thread.sleep(2000);
+						break;
+					}
+				}catch(Exception e){
+
+				}
+			}
+		}
+
+		// ###############################################################
+		//Method Description           : Waits until search records displayed under Table
+		//Input Parameters             : 1(time in seconds )
+		//  Waits until Search Results displayed under table
+		public void waitForTableRecordsToLoad(int timeOut) {
+			for(int i=0;i<timeOut;i++) {
+				try {
+					WebElement	elt = driver.findElement(By.xpath("//div[contains(text(),'Loading records')]"));
+					if(elt.isDisplayed()) {
+						Thread.sleep(1000);
+					}else {
+						Thread.sleep(1000);
+						break;
+					}
+				}catch(Exception e){
+
+				}
+			}
+		}
+		//Method Description           : Waits until Page loads completely
+		//  Waits until Search Results loaded completely
+		public void waitForPageToLoadCompletely(int timeOut) {
+			for(int i=0;i<timeOut;i++) {
+				try {
+					WebElement	elt = driver.findElement(By.xpath("//div[contains(@class, 'loading')]"));
+					if(elt.isDisplayed()) {
+						Thread.sleep(2000);
+
+					}else {
+						System.out.println("Loading is not displayed");
+						break;
+					}
+				}catch(Exception e){
+					System.out.println("Loading is not displayed");
+					waitSeconds(1);
+					break;
+				}
+			}
+		}
+
+		public void waitForPageLoad(int timeOutInSec) {
+			List<WebElement> elt;
+			int i = 0;
+			do {
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					
+					e.printStackTrace();
+				}
+				elt = driver.findElements(By.xpath("//div[contains(@class, 'loading')]"));
+				i++;
+				System.out.println("Wait for page load iteration. Iteration " + i);
+			} while (elt.size() > 0 && i < timeOutInSec);
+		}
+
+		//##################################################################################
+		//Convert a given String to Letter Case and append with the seperator
+		//##################################################################################
+		public String converToLetterCase(String strText) {
+			String strSeperator=" ";
+			String[] strSplitArray = strText.split(strSeperator);
+			String[] strOutputArray = new String[strSplitArray.length];
+			for (int i=0;i<strSplitArray.length;i++) {
+				String s1 = strSplitArray[i].substring(0, 1).toUpperCase();
+				strOutputArray[i] = s1 + strSplitArray[i].substring(1).toLowerCase();
+			}
+
+			String strOutputText = "";
+			for (int i=0;i<strOutputArray.length;i++) {
+				strOutputText = strOutputText+strOutputArray[i]+strSeperator;
+			}
+
+			strOutputText=strOutputText.substring(0, strOutputText.length()-1);
+
+			return strOutputText;
+		}
+
+		//##################################################################################
+		//Validate Page Title
+		//##################################################################################
+		public void validatePageTitle(String strExpectedPageTitle) {
+			//Wait for Page Load
+			waitForPageToLoadCompletely(LONG_WAIT);
+			//Get Expected Title
+			//String strExpectedPageTitle = properties.getProperty("ApplicationTitle");
+			//Get Actual Title
+			String strActualPageTitle = driver.getTitle();
+			if (strActualPageTitle.toLowerCase().contains(strExpectedPageTitle.toLowerCase())) {
+				////report.updateTestLog("Page Navigation", strActualPageTitle+" Page is Navigated", Status.PASS);
+				captureScreenOnPageNav(strExpectedPageTitle);
+			} else {
+				////report.updateTestLog("Page Navigation", strActualPageTitle+" Page is Navigated. Expected Title: "+strExpectedPageTitle, Status.FAIL);
+			}
+		}
+
+		//##################################################################################
+		//Validate Page Navigation
+		//##################################################################################
+		public void validatePageNavigation(String strExpectedPageTitle,String strStepName) {
+			//Wait for Page Load
+			waitForPageToLoadCompletely(LONG_WAIT);
+			//Get Actual URL
+			String strActualPageURL = driver.getTitle();
+			if (strActualPageURL.toLowerCase().contains(strExpectedPageTitle.toLowerCase())) {
+				////report.updateTestLog(strStepName, "Page Naviagation is successful", Status.PASS);
+			} else {
+				////report.updateTestLog(strStepName, "Page Navigation is Failed", Status.FAIL);
+			}
+		}
+
+		//##################################################################################
+		//Validate Page Url
+		//##################################################################################
+		public void validatePageURL(String strExpectedPageURL) {
+			//Wait for Page Load
+			waitForPageToLoadCompletely(LONG_WAIT);
+			//Get Actual URL
+			String strActualPageURL = driver.getCurrentUrl();
+			if (strActualPageURL.toLowerCase().contains(strExpectedPageURL.toLowerCase())) {
+				captureScreenOnPageNav(strExpectedPageURL);
+			} else {
+			}
+		}
+
+		//##################################################################################
+		//Capture Screen on Page Navigation
+		//##################################################################################
+		public void captureScreenOnPageNav(String strStepName) {
+			//method to be written for screenshot
+		}
+
+		//##################################################################################
+		//Capture Screen on Element Display
+		//##################################################################################
+		public void captureScreenOnEltDisplay(String strStepName) {
+			////report.updateTestLog(strStepName, "Screen Capture confirming Element Display", Status.SCREENSHOT);
+		}
+
+		//##################################################################################
+		//Click on Universal Logo and Navigate to Home Page
+		//##################################################################################
+		public void validateNavToHomePgUsingLogo() {
+			//Get the WebElement
+			WebElement elt = getWebElement("//div[contains(@class, 'header-logo')]//a");
+			//Wait for the Object
+			explicitlyWait(elt);
+			//Click on Logo
+			clickAndWaitForPageLoad(elt, "Universal Logo", MEDIUM_WAIT);
+			//Validate Navigation and Page Title
+			validatePageTitle(properties.getProperty("ApplicationTitle"));
+		}
+
+	
+
+		//##################################################################################
+		//Resize Window
+		//##################################################################################
+		public void resizeWindow() {
+			//Create object of Dimensions class
+			Dimension d = new Dimension(1200,800);
+			//Resize the current window to the given dimension
+			driver.manage().window().setSize(d);
+		}
+
+		//##################################################################################
+		//Switch Window
+		//##################################################################################
+		public void switchWindow() {
+			try {
+				//String strMainWindow = driver.getWindowHandle();
+				System.out.println("Windows"+driver.getWindowHandles().size());
+				String strWinHandle="";
+				for (String winHandle : driver.getWindowHandles()) {
+					driver.switchTo().window(winHandle);
+					strWinHandle = winHandle;
+				}
+				driver.manage().window().maximize();
+			} catch (Exception e) {
+				 
+				e.printStackTrace();
+			}
+		}
+
+
+		//##################################################################################
+		//Switch Window and Validate Title
+		//##################################################################################
+		public void switchWindowAndValidatePgTitle(String strExpectedPageTitle) {
+			String strMainWindow = driver.getWindowHandle();
+			System.out.println("Windows"+driver.getWindowHandles().size());
+			String strWinHandle="";
+			for (String winHandle : driver.getWindowHandles()) {
+				driver.switchTo().window(winHandle);
+				strWinHandle = winHandle;
+			}
+			//Validate Page Title
+			validatePageTitle(strExpectedPageTitle);
+			//Close the Second Window
+			driver.switchTo().window(strWinHandle).close();
+			//Switch to Parent window
+			driver.switchTo().window(strMainWindow);
+
+		}
+
+		//##################################################################################
+		//Switch Window and Close Parent Window
+		//##################################################################################
+		public void switchWindowCloseParent() {
+			try {
+				String strMainWindow = driver.getWindowHandle();
+				driver.switchTo().window(strMainWindow).close();
+				System.out.println("Windows"+driver.getWindowHandles().size());
+				String strWinHandle="";
+				for (String winHandle : driver.getWindowHandles()) {
+					driver.switchTo().window(winHandle);
+					strWinHandle = winHandle;
+				}
+				//Close the Second Window
+				//Switch to Parent window
+				driver.switchTo().window(strWinHandle);
+			} catch (Exception e) {
+				 
+				e.printStackTrace();
+			}
+		}
+
+		//##################################################################################
+		//Switch Window and Validate URL
+		//##################################################################################
+		public void switchWindowAndValidatePgURL(String strExpectedPageURL) {
+			String strMainWindow = driver.getWindowHandle();
+			//System.out.println("Windows"+driver.getWindowHandles().size());
+			String strWinHandle="";
+			for (String winHandle : driver.getWindowHandles()) {
+				driver.switchTo().window(winHandle);
+				strWinHandle = winHandle;
+			}
+			//Validate Page URL
+			validatePageURL(strExpectedPageURL);
+			//Close the Second Window
+			driver.switchTo().window(strWinHandle).close();
+			//Switch to Parent window
+			driver.switchTo().window(strMainWindow);
+		}
+
+		//##################################################################################
+		//Close Child Switch To Parent Window
+		//##################################################################################
+		public void closeChildAndSwitchToParentWindow() {
+			try {
+				//Close the Window
+				driver.close();
+				//Switch window
+				for(String winHandle : driver.getWindowHandles()){
+					driver.switchTo().window(winHandle);
+					break;
+				}
+			} catch (Exception e) {
+				 
+				e.printStackTrace();
+			}
+		}
+
+
+		//##################################################################################
+		//Get Attribute
+		//##################################################################################
+		public String getAttributeValue(WebElement elt, String strAttributeName) {
+			waitForObject(elt);
+			String strAttributeValue="";
+			try {
+				strAttributeValue = elt.getAttribute(strAttributeName);
+			} catch (Exception e) {
+				 
+				e.printStackTrace();
+			}
+			return strAttributeValue;
+		}
+
+
+		//##################################################################################
+		//Set Attribute Value
+		//##################################################################################
+		public void setAttributeValue(WebElement element, String attName, String attValue) {
+			JavascriptExecutor executor = (JavascriptExecutor) driver;
+			executor.executeScript("arguments[0].setAttribute(arguments[1], arguments[2]);",  element, attName, attValue);  
+		}
+
+		//##################################################################################
+		//Validate Defualt Selection
+		//##################################################################################
+		public void validateDefaultSelection(String strXPath, String strText) {
+
+			//Get Attribute
+			String strActiveStatus = getAttributeValue(getWebElement(strXPath), "aria-selected");
+			//Convert to Boolean
+			boolean blnActiveStatus = Boolean.parseBoolean(strActiveStatus);
+			//Validate Tab Selection
+			if (blnActiveStatus) {
+			} else {
+			}
+
+		}
+
+		//##################################################################################
+		//Validate Defualt Radio Selection
+		//##################################################################################
+		public void validateDefaultRadioSelection(String strXPath, String strText) {
+
+			//Get Attribute
+			String strActiveStatus = getAttributeValue(getWebElement(strXPath), "aria-checked");
+			//Convert to Boolean
+			boolean blnActiveStatus = Boolean.parseBoolean(strActiveStatus);
+			//Validate Tab Selection
+			if (blnActiveStatus) {
+			} else {
+			}
+
+		}
+
+		//##################################################################################
+		//Get WebElement from A XPath after replacing the Dynamic Text
+		//##################################################################################
+		public WebElement getWebElementReplaceXPath(String strXPath, String strDynamicText, String strReplacedText) {
+			//Replace the Dynamic Value
+			String strTempXPath = strXPath;
+			strTempXPath = strTempXPath.replace(strDynamicText, strReplacedText);
+			//Get WebElement
+			WebElement elt = getWebElement(strTempXPath);
+			//Return WebElement
+			return elt;
+		}
+
+		//##################################################################################
+		//Get XPath after replacing the Dynamic Text
+		//##################################################################################
+		public String getReplacedXPath(String strXPath, String strDynamicText, String strReplacedText) {
+			//Replace the Dynamic Value
+			String strTempXPath = strXPath;
+			strTempXPath = strTempXPath.replace(strDynamicText, strReplacedText);
+			//Return XPath
+			return strTempXPath;
+		}
+
+		//##################################################################################
+		//Navigate Back in Browser and Report
+		//##################################################################################
+		public void navigateBackDriver() {
+			//Boolean for Report
+			boolean blnNavigateBack = false;
+			//Wait For Page Load
+			waitForPageToLoadCompletely(LONG_WAIT);
+			//Get Current URL 1
+			String strCurrentURL1 = driver.getCurrentUrl();
+			//Navigate Back
+			driver.navigate().back();
+			for (int i = 0; i < 5; i++) {
+				System.out.println(i);
+				//Wait For Page Load
+				waitForPageToLoadCompletely(LONG_WAIT);
+				//Get Current URL 2
+				String strCurrentURL2 = driver.getCurrentUrl();
+				if (!strCurrentURL1.equalsIgnoreCase(strCurrentURL2)) {
+					blnNavigateBack = true;
+					break;
+				} else {
+					JavascriptExecutor js = (JavascriptExecutor)driver;
+					js.executeScript("window.history.back();");
+				}
+			}
+			if (blnNavigateBack) {
+				//Wait for Page Load
+				waitForPageToLoadCompletely(LONG_WAIT);
+			} else {
+			}		
+		}
+
+		//##################################################################################
+		//Validate Background Color/Format rgba
+		//##################################################################################
+		public void validateBackgroundColor(String strXPath, String strColorRGBA, String strColorName) {
+			//Get Attribute
+			String strAttributeValue = getWebElement(strXPath).getCssValue("background-color");
+			//Validate Background Color
+			if (strAttributeValue.equals(strColorRGBA)) {
+			} else {
+			}
+		}
+
+		//##################################################################################
+		//Validate Background Color/Format rgba
+		//##################################################################################
+		public boolean validateBackgroundColor(WebElement elt, String strColorRGBA, String strColorName) {
+			boolean blnCheck = false;
+			//Get Attribute
+			String strAttributeValue = elt.getCssValue("background-color");
+			//Validate Background Color
+			if (strAttributeValue.equals(strColorRGBA)) {
+				////report.updateTestLog("Background Color of Selection", "Background Color: "+strColorName, Status.PASS);
+				blnCheck = true;
+			} else {
+			}
+
+			return blnCheck;
+		}
+
+		//##################################################################################
+		//Validate Element Color
+		//##################################################################################
+		public void validateElementColor(String strXPath, String strColorRGBA, String strColorName, String strElementDesc) {
+			//Get Attribute
+			String strAttributeValue = getWebElement(strXPath).getCssValue("color");
+			//Validate Element Color
+			if (strAttributeValue.equals(strColorRGBA)) {
+			} else {
+			}
+		}
+
+		//##################################################################################
+		//Validate Element Color
+		//##################################################################################
+		public void validateElementColor(WebElement elt, String strColorRGBA, String strColorName, String strElementDesc) {
+			//Get Attribute
+			String strAttributeValue = elt.getCssValue("color");
+			//Validate Element Color
+			if (strAttributeValue.equals(strColorRGBA)) {
+			} else {
+			}
+		}
+
+		//##################################################################################
+		//Validate Element is not clickable
+		//##################################################################################
+		public void validateElementNotClickable(WebElement elt, String strLinkText) {
+			try {
+				//Capture PrePageTitle before Click
+				String prePageTitle = driver.getTitle();
+				//Click on WebElement
+				elt.click();
+				//Capture PageTitle after Click
+				String postPageTitle = driver.getTitle();
+				if (postPageTitle.equalsIgnoreCase(prePageTitle)) {
+				} else {
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+
+		}
+
+		//##################################################################################
+		//Verify Promo Messages are Not Same
+		//##################################################################################
+		public void verifyNoDuplicates(List<String> strList,String strStepName) {
+			List<String> strActualList=strList;
+			boolean isDuplicatesFound=false;
+			for(int i=0;i<strActualList.size();i++) {
+				List<String> strTemplList=strList;
+				String strCurrentOption=strList.get(i);
+				strTemplList.remove(i);
+				if(strTemplList.contains(strCurrentOption)) {
+					isDuplicatesFound=true;
+				}
+			}
+			if(isDuplicatesFound) {
+			}else {
+			}
+		}
+
+		//##################################################################################
+		//Highlight an Element
+		//##################################################################################
+		public void highlightElement(WebElement elt) {
+			JavascriptExecutor js = (JavascriptExecutor) driver;
+			js.executeScript("arguments[0].setAttribute('style', 'background: yellow; border: 2px solid red;');", elt);
+		}
+
+		//##################################################################################
+		//Select Distinct Values
+		//##################################################################################
+		String selectDistinctValues(String[] ar) {
+			HashMap<String,Integer> hm = new HashMap<String,Integer>(); 
+			for (int i = 0; i < ar.length; i++) { 
+				hm.put(ar[i], i); 
+			} 
+			// Using hm.keySet() to print output reduces time complexity
+			Set<String> setReturn = hm.keySet(); 
+			// Convert the Set of String to String 
+			String string = String.join(";", setReturn);
+			return string;
+		}
+
+		//##################################################################################
+		//Handle Alert
+		//##################################################################################
+		public void handleAlert(){
+			if(isAlertPresent()){
+				Alert alert = driver.switchTo().alert();
+				System.out.println(alert.getText());
+				alert.accept();
+			}
+		}
+
+		//##################################################################################
+		//Write Data to File
+		//##################################################################################
+		public void writeUsingOutputStream(String data, File file) { 
+			OutputStream os = null;
+			try {
+				os = new FileOutputStream(file);
+				os.write(data.getBytes(), 0, data.length());
+
+			} catch (Exception e) {
+			}
+
+			finally {
+				try {
+					//os.close();
+				} catch (Exception e2) {
+				}
+			}
+		}
+
+		//##################################################################################
+		//Select By Value From Drop Down List
+		//##################################################################################
+		public void SelectByValueFromDropDown(WebElement element,String value, String nameOfField) {
+			if (waitForObject(element)) {
+				Select dropdown = new Select(element);
+				dropdown.selectByValue(value);
+				checkPageIsReady(SMALL_WAIT);
+			} else {
+			}
+		}
+
+		//##################################################################################
+		//Get Last Modified File Name From Directory
+		//##################################################################################
+		public static File getLastModified(String directoryFilePath)
+		{
+			File directory = new File(directoryFilePath);
+			File[] files = directory.listFiles(File::isFile);
+			long lastModifiedTime = Long.MIN_VALUE;
+			File chosenFile = null;
+
+			if (files != null)
+			{
+				for (File file : files)
+				{
+					if (file.lastModified() > lastModifiedTime)
+					{
+						chosenFile = file;
+						lastModifiedTime = file.lastModified();
+					}
+				}
+			}
+			return chosenFile;
+		}
+		
+		
+		//##################################################################################
+		// Method is Not Correct<<To be Edited>>##Reference Purpose##
+		//##################################################################################
+		void sortArrayList() {
+			ArrayList<String> arrList = new ArrayList<String>();
+			//Sort array list in Ascending Order
+			Collections.sort(arrList);
+			System.out.println(arrList);
+			//Sort array list in Descending Order
+			Collections.sort(arrList, Collections.reverseOrder()); 
+			String[] arr = new String[arrList.size()];
+			//Convert array To Array list
+			Collections.addAll(arrList, arr);
+			//Convert Array list To array
+			arr=arrList.toArray(arr);
+
+		}
+		
+		//#########################################################
+		//Skip Weekends and get nth Date
+		//#########################################################
+		public static LocalDate add(LocalDate date, int workdays) {
+		    if (workdays < 1) {
+		        return date;
+		    }
+
+		    LocalDate result = date;
+		    int addedDays = 0;
+		    while (addedDays < workdays) {
+		        result = result.plusDays(1);
+		        if (!(result.getDayOfWeek() == DayOfWeek.SATURDAY ||
+		              result.getDayOfWeek() == DayOfWeek.SUNDAY)) {
+		            ++addedDays;
+		        }
+		    }
+
+		    return result;
+		}
+
+		
+		//UFT integration with Selenium
+//		
+//        File beforeDelete=new File(System.getProperty("user.dir")+"\\UFTActionCompleted.txt");
+//        if(beforeDelete.exists()){
+//              beforeDelete.delete();
+//        }
+//        Runtime.getRuntime().exec(new String[] {"wscript.exe", System.getProperty("user.dir")+"\\ActionLaunchQTP.vbs"});
+//        File AfterUFTActions=new File(System.getProperty("user.dir")+"\\UFTActionCompleted.txt");
+//        while(!AfterUFTActions.exists()){
+//              
+//         }
+
+		//###########################           END          ###############################
+
+
+	
+}
